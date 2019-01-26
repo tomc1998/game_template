@@ -9,6 +9,7 @@ set (src-dir ${root-dir}/src)
 
 set (entt-game-srcs
   ${src-dir}/main.cpp
+  ${root-dir}/src-deps/glad/glad.o
   )
 
 link_directories(
@@ -18,6 +19,7 @@ link_directories(
 
 add_executable(entt-game ${entt-game-srcs})
 
+target_include_directories(entt-game PUBLIC ${root-dir}/src-deps/glad/include)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/glfw/include)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/entt/src)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/libpng/build/include)

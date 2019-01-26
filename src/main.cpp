@@ -1,6 +1,15 @@
 #include <entt/entt.hpp>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include <cstdio>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
+
+#include "shader.hpp"
+#include "renderer/renderer.hpp"
+#include "setup_context.hpp"
 
 struct Position {
     float x;
@@ -36,7 +45,9 @@ void update(std::uint64_t dt, entt::DefaultRegistry &registry) {
 
 int main() {
     entt::DefaultRegistry registry;
-    std::uint64_t dt = 16;
+    const std::uint64_t dt = 16;
+    const auto window = setup_context();
+    renderer game_renderer(registry);
 
     unsigned remembered_entity;
     for(auto ii = 0; ii < 10000; ++ii) {
@@ -45,14 +56,12 @@ int main() {
         if(ii % 2 == 0) { registry.assign<Velocity>(remembered_entity, ii * .1f, ii * .1f); }
     }
 
-    for (auto ii = 0; ii < 100; ++ii) {
-      if (ii % 10 == 0) {
-      }
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    while(!glfwWindowShouldClose(window)) {
       update(dt, registry);
+      game_renderer.render();
+      glfwPollEvents();
+      glfwSwapBuffers(window);
     }
-
-    std::cout << "Entity = " << remembered_entity << std::endl;
-
-    const auto &pos = registry.get<Position>(remembered_entity - 1);
-    std::cout << "Pos = " << pos.x << " " << pos.y << std::endl;
 }

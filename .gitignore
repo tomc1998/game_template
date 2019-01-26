@@ -1,3 +1,5 @@
 deps
 build
 .projectile
+TAGS
+.dir-locals.el
