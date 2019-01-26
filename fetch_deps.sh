@@ -5,6 +5,9 @@ mkdir -p deps
 ## ENTT
 if [ ! -d deps/entt ]; then
   pushd deps && git clone https://github.com/skypjack/entt.git entt
+  pushd entt
+  git checkout tags/cpp14 -b cpp14
+  popd
   popd
 fi
 
