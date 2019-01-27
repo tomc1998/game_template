@@ -86,4 +86,8 @@ public:
   void use() {
     glUseProgram(program);
   }
+
+  GLuint get_uniform_loc(const char* uniform) {
+    return glGetUniformLocation(program, uniform);
+  }
 };
