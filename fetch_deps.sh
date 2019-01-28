@@ -42,5 +42,15 @@ if [ ! -d deps/libpng ]; then
     popd
 fi
 
+## LuaJIT
+if [ ! -d deps/luajit ]; then
+    pushd deps
+    git clone http://luajit.org/git/luajit-2.0.git luajit
+    pushd luajit
+    make
+    popd
+    popd
+fi
+
 
 

@@ -15,6 +15,7 @@ set (entt-game-srcs
 link_directories(
   ${root-dir}/deps/glfw/build/src
   ${root-dir}/deps/libpng/build/lib
+  ${root-dir}/deps/luajit/src
   /usr/local/lib)
 
 add_executable(entt-game ${entt-game-srcs})
@@ -23,6 +24,7 @@ target_include_directories(entt-game PUBLIC ${root-dir}/src-deps/glad/include)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/glfw/include)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/entt/src)
 target_include_directories(entt-game PUBLIC ${root-dir}/deps/libpng/build/include)
+target_include_directories(entt-game PUBLIC ${root-dir}/deps/luajit/src)
 
 # run pkg-config for glfw
 set(ENV{PKG_CONFIG_PATH} ${root-dir}/deps/glfw/build/src)
@@ -33,7 +35,7 @@ string(STRIP ${glfw-pkg-config} glfw-pkg-config)
 separate_arguments(glfw-pkg-config)
 
 # Link against LLVM libraries
-target_link_libraries(entt-game png ${glfw-pkg-config})
+target_link_libraries(entt-game luajit png ${glfw-pkg-config})
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set (CMAKE_CXX_FLAGS "--std=c++14 -Wall -Werror -g -O3")

@@ -9,6 +9,8 @@ struct renderer {
 
   Matrix proj_mat;
   GLint proj_mat_loc;
+  GLuint tex;
+  GLint tex_loc;
 
   /* Shaders */
 
@@ -30,6 +32,7 @@ struct renderer {
     // Bind uniforms
     main_dyn_opaque_shader.use();
     proj_mat_loc = main_dyn_opaque_shader.get_uniform_loc("proj_mat");
+    tex_loc = main_dyn_opaque_shader.get_uniform_loc("tex");
     proj_mat = Matrix::ortho(0, 800, 0, 600);
 
     // Setup main dyn opaque vao
@@ -47,6 +50,10 @@ struct renderer {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+
+    // Load texture
+    tex = load_texture("assets/img/test.png");
+
     buffer_data();
     upload_data<false>();
   }
@@ -78,19 +85,23 @@ struct renderer {
             float fdata;
             unsigned idata;
           } data[10 * 3];
-          // WARNING: Colors are flipped (ABGR) because endianness
-          // UV values are skipped since they're currently unused
-          data[0].fdata  = pos.x - debug_draw.w; data[1].fdata  = pos.y - debug_draw.h; // TRI 0
+          data[0].fdata  = pos.vec.x - debug_draw.vec.x; data[1].fdata  = pos.vec.y - debug_draw.vec.y; // TRI 0
+          data[2].fdata  = 0.0; data[3].fdata = 0.0;
           data[4].idata  = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[5].fdata  = pos.x - debug_draw.w; data[6].fdata  = pos.y + debug_draw.h;
+          data[5].fdata  = pos.vec.x - debug_draw.vec.x; data[6].fdata  = pos.vec.y + debug_draw.vec.y;
+          data[7].fdata  = 0.0; data[8].fdata = 1.0;
           data[9].idata  = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[10].fdata = pos.x + debug_draw.w; data[11].fdata = pos.y + debug_draw.h;
+          data[10].fdata = pos.vec.x + debug_draw.vec.x; data[11].fdata = pos.vec.y + debug_draw.vec.y;
+          data[12].fdata  = 1.0; data[13].fdata = 1.0;
           data[14].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[15].fdata = pos.x - debug_draw.w; data[16].fdata = pos.y - debug_draw.h; // TRI 1
+          data[15].fdata = pos.vec.x - debug_draw.vec.x; data[16].fdata = pos.vec.y - debug_draw.vec.y; // TRI 1
+          data[17].fdata  = 0.0; data[18].fdata = 0.0;
           data[19].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[20].fdata = pos.x + debug_draw.w; data[21].fdata = pos.y - debug_draw.h;
+          data[20].fdata = pos.vec.x + debug_draw.vec.x; data[21].fdata = pos.vec.y - debug_draw.vec.y;
+          data[22].fdata  = 1.0; data[23].fdata = 0.0;
           data[24].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[25].fdata = pos.x + debug_draw.w; data[26].fdata = pos.y + debug_draw.h;
+          data[25].fdata = pos.vec.x + debug_draw.vec.x; data[26].fdata = pos.vec.y + debug_draw.vec.y;
+          data[27].fdata  = 1.0; data[28].fdata = 1.0;
           data[29].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
 
           main_dyn_opaque_buffer.insert(main_dyn_opaque_buffer.end(),
@@ -105,6 +116,9 @@ struct renderer {
     upload_data<true>();
     // Upload uniforms
     glUniformMatrix4fv(proj_mat_loc, 1, GL_TRUE, proj_mat.data);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glUniform1i(tex_loc, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindVertexArray(main_dyn_opaque_vao);
     glDrawArrays(GL_TRIANGLES, 0, main_dyn_opaque_buffer.size() / 20);
