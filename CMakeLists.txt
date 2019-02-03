@@ -7,10 +7,10 @@ set (CMAKE_CXX_COMPILER g++)
 set (root-dir ${CMAKE_CURRENT_SOURCE_DIR})
 set (src-dir ${root-dir}/src)
 
+# Unity build so we just have 1 source file <3
 set (entt-game-srcs
   ${src-dir}/main.cpp
-  ${root-dir}/src-deps/glad/glad.o
-  )
+  ${root-dir}/src-deps/glad/glad.o)
 
 link_directories(
   ${root-dir}/deps/glfw/build/src
@@ -18,13 +18,17 @@ link_directories(
   ${root-dir}/deps/luajit/src
   /usr/local/lib)
 
+# Build the executable
+
 add_executable(entt-game ${entt-game-srcs})
 
-target_include_directories(entt-game PUBLIC ${root-dir}/src-deps/glad/include)
-target_include_directories(entt-game PUBLIC ${root-dir}/deps/glfw/include)
-target_include_directories(entt-game PUBLIC ${root-dir}/deps/entt/src)
-target_include_directories(entt-game PUBLIC ${root-dir}/deps/libpng/build/include)
-target_include_directories(entt-game PUBLIC ${root-dir}/deps/luajit/src)
+# Setup include directories for the exe
+set (entt-game-idir ${root-dir}/src-deps/glad/include
+                    ${root-dir}/deps/glfw/include
+                    ${root-dir}/deps/entt/src
+                    ${root-dir}/deps/libpng/build/include
+                    ${root-dir}/deps/luajit/src)
+target_include_directories(entt-game PUBLIC ${entt-game-idir})
 
 # run pkg-config for glfw
 set(ENV{PKG_CONFIG_PATH} ${root-dir}/deps/glfw/build/src)
@@ -37,6 +41,7 @@ separate_arguments(glfw-pkg-config)
 # Link against LLVM libraries
 target_link_libraries(entt-game luajit png ${glfw-pkg-config})
 
+# Figure out per-platform compiler flags
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set (CMAKE_CXX_FLAGS "--std=c++14 -Wall -Werror -g -O3")
 endif()

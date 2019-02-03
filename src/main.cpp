@@ -19,6 +19,9 @@
 #include "shader.hpp"
 #include "renderer/renderer.hpp"
 #include "setup_context.hpp"
+#include "grid.hpp"
+
+#include "tests/test_runner.hpp"
 
 void update(GLFWwindow* window, entt::DefaultRegistry &registry) {
   registry.view<cpos, cvel>().each([](auto entity, cpos &pos, cvel &vel) {
@@ -29,7 +32,11 @@ void update(GLFWwindow* window, entt::DefaultRegistry &registry) {
     });
 }
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc > 1 && strcmp(argv[1], "test") == 0) {
+    return tests::run_all_tests();
+  }
+
   // Create state
   entt::DefaultRegistry registry;
   for(auto ii = 0; ii < 4; ++ii) {
