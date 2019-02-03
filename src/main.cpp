@@ -11,6 +11,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "input.hpp"
 #include "load_image.hpp"
 #include "script_test.hpp"
 #include "vector.hpp"
@@ -19,7 +20,6 @@
 #include "shader.hpp"
 #include "renderer/renderer.hpp"
 #include "setup_context.hpp"
-#include "grid.hpp"
 
 #include "tests/test_runner.hpp"
 
@@ -55,6 +55,9 @@ int main(int argc, char** argv) {
   auto window = setup_context();
   renderer game_renderer(registry);
 
+  // Setup input
+  input_manager& iman = input_manager::create_instance(window);
+
   do_script_test();
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -62,7 +65,7 @@ int main(int argc, char** argv) {
   while(!glfwWindowShouldClose(window)) {
     update(window, registry);
     game_renderer.render();
-    glfwPollEvents();
+    iman.poll();
     glfwSwapBuffers(window);
   }
 }
