@@ -15,6 +15,9 @@ struct button {
     : code(code), type(type), down(false) {}
   button()
     : code(0), type(button_type::key), down(false) {}
+
+  bool just_down() const { return down && just_changed; }
+  bool just_up() const { return !down && just_changed; }
 };
 
 struct control_state {
@@ -27,7 +30,10 @@ struct control_state {
    create_instance() and get() static functions.
  */
 class input_manager {
+public:
   control_state cstate = control_state();
+
+private:
   /** An array of buttons we can iterate over */
   button* buttons[1] { &cstate.move };
 
@@ -71,8 +77,8 @@ class input_manager {
 
   static void cursor_pos_callback(GLFWwindow* window, double x, double y) {
     input_manager* iman = (input_manager*)glfwGetWindowUserPointer(window);
-    iman->mousex = (int)x;
-    iman->mousey = (int)y;
+    iman->mouse_x = (int)x;
+    iman->mouse_y = (int)y;
   }
 
   input_manager(GLFWwindow* window) {
@@ -98,7 +104,7 @@ public:
   static input_manager& get();
 
   /** Top left is 0,0 */
-  int mousex, mousey;
+  int mouse_x, mouse_y;
 
   /** Polls the GLFW events (call this every frame) */
   void poll() {
