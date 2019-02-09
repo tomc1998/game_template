@@ -1,0 +1,6 @@
+-Isrc
+-Ideps/glfw/include
+-Ideps/entt/src
+-Ideps/libpng/build/include
+-Ideps/luajit/src
+-Isrc-deps/glad/include

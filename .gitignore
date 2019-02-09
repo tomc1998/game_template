@@ -3,3 +3,4 @@ build
 .projectile
 TAGS
 .dir-locals.el
+.clang_complete
