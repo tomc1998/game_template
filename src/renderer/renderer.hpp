@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "texture_atlas.hpp"
+
 /** Controls rendering to a GL context */
 struct renderer {
   /** A reference to the ECS */
@@ -9,7 +11,7 @@ struct renderer {
 
   Matrix proj_mat;
   GLint proj_mat_loc;
-  GLuint tex;
+  texture_atlas atlas;
   GLint tex_loc;
 
   /* Shaders */
@@ -25,6 +27,7 @@ struct renderer {
 
   renderer(entt::DefaultRegistry& registry)
     : registry(registry),
+      atlas("assets/img/test.png"),
       main_dyn_opaque_shader("assets/shaders/vert.glsl", "assets/shaders/frag.glsl",
                              {std::make_pair("pos", 0),
                                  std::make_pair("uv", 1),
@@ -51,9 +54,6 @@ struct renderer {
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    // Load texture
-    tex = load_texture("assets/img/test.png");
-
     buffer_data();
     upload_data<false>();
   }
@@ -75,37 +75,49 @@ struct renderer {
     }
   }
 
+  /** Render a coloured square where the current grid focus is. */
+  void render_grid_focus() {
+  }
+
+  template <typename OutputIter>
+  void fill_rect(float x, float y, float w, float h, const color &c,
+                 const texture_region &tex, OutputIter out) {
+    // Build the data on the stack then copy over
+    union {
+      float fdata;
+      color idata;
+    } data[10 * 3];
+    const auto uv_rect = tex.to_uv_rect();
+    data[0].fdata  = x; // TRI 0
+    data[1].fdata  = y;
+    data[2].fdata  = uv_rect.u; data[3].fdata  = uv_rect.v; data[4].idata  = c;
+    data[5].fdata  = x;
+    data[6].fdata  = y + h;
+    data[7].fdata  = uv_rect.u; data[8].fdata  = uv_rect.t; data[9].idata  = c;
+    data[10].fdata = x + w;
+    data[11].fdata = y + h;
+    data[12].fdata = uv_rect.s; data[13].fdata = uv_rect.t; data[14].idata = c;
+    data[15].fdata = x; // TRI 1
+    data[16].fdata = y;
+    data[17].fdata = uv_rect.u; data[18].fdata = uv_rect.v; data[19].idata = c;
+    data[20].fdata = x + w;
+    data[21].fdata = y;
+    data[22].fdata = uv_rect.s; data[23].fdata = uv_rect.v; data[24].idata = c;
+    data[25].fdata = x + w;
+    data[26].fdata = y + h;
+    data[27].fdata = uv_rect.s; data[28].fdata = uv_rect.t; data[29].idata = c;
+    std::copy((char*)(&data[0]), (char*)(&data[30]), out);
+  }
+
   /** Create a buffer of all the data */
   void buffer_data() {
+    const auto& white = *atlas.get_region("white");
     main_dyn_opaque_buffer.clear();
     registry.view<cpos, cdebug_draw>()
-      .each([this](auto entity, auto &pos, auto &debug_draw) {
-          // Build the data on the stack then copy over
-          union {
-            float fdata;
-            unsigned idata;
-          } data[10 * 3];
-          data[0].fdata  = pos.vec.x - debug_draw.vec.x; data[1].fdata  = pos.vec.y - debug_draw.vec.y; // TRI 0
-          data[2].fdata  = 0.0; data[3].fdata = 0.0;
-          data[4].idata  = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[5].fdata  = pos.vec.x - debug_draw.vec.x; data[6].fdata  = pos.vec.y + debug_draw.vec.y;
-          data[7].fdata  = 0.0; data[8].fdata = 1.0;
-          data[9].idata  = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[10].fdata = pos.vec.x + debug_draw.vec.x; data[11].fdata = pos.vec.y + debug_draw.vec.y;
-          data[12].fdata  = 1.0; data[13].fdata = 1.0;
-          data[14].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[15].fdata = pos.vec.x - debug_draw.vec.x; data[16].fdata = pos.vec.y - debug_draw.vec.y; // TRI 1
-          data[17].fdata  = 0.0; data[18].fdata = 0.0;
-          data[19].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[20].fdata = pos.vec.x + debug_draw.vec.x; data[21].fdata = pos.vec.y - debug_draw.vec.y;
-          data[22].fdata  = 1.0; data[23].fdata = 0.0;
-          data[24].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-          data[25].fdata = pos.vec.x + debug_draw.vec.x; data[26].fdata = pos.vec.y + debug_draw.vec.y;
-          data[27].fdata  = 1.0; data[28].fdata = 1.0;
-          data[29].idata = (debug_draw.col[3] << 24) | (debug_draw.col[2] << 16) | (debug_draw.col[1] << 8) | debug_draw.col[0];
-
-          main_dyn_opaque_buffer.insert(main_dyn_opaque_buffer.end(),
-                                        (char*)(&data[0]), (char*)(&data[30]));
+      .each([this, &white](auto entity, auto &pos, auto &debug_draw) {
+          this->fill_rect(pos.vec.x - debug_draw.vec.x, pos.vec.y - debug_draw.vec.y,
+                          debug_draw.vec.x * 2, debug_draw.vec.y * 2,
+                          debug_draw.col, white, std::back_inserter(main_dyn_opaque_buffer));
         });
   }
 
@@ -117,7 +129,7 @@ struct renderer {
     // Upload uniforms
     glUniformMatrix4fv(proj_mat_loc, 1, GL_TRUE, proj_mat.data);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, atlas.tex);
     glUniform1i(tex_loc, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindVertexArray(main_dyn_opaque_vao);

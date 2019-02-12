@@ -1,5 +1,11 @@
 #pragma once
 
+/** texture handle + metadata */
+struct loaded_texture {
+  int w, h;
+  GLuint tex;
+};
+
 GLint libpng_color_type_to_gl(int color_type) {
   if (color_type == PNG_COLOR_TYPE_RGB) {
     return GL_RGB;
@@ -12,7 +18,7 @@ GLint libpng_color_type_to_gl(int color_type) {
 }
 
 /** Load a texture from a file, upload to GPU, then return the tex handle */
-GLuint load_texture(const char* filename) {
+loaded_texture load_texture(const char* filename) {
   unsigned char header[8];
   std::FILE* f = std::fopen(filename, "rb");
   if (!f) {
@@ -66,5 +72,5 @@ GLuint load_texture(const char* filename) {
                width, height, 0, libpng_color_type_to_gl(color_type),
                GL_UNSIGNED_BYTE, data);
   glGenerateMipmap(GL_TEXTURE_2D);
-  return handle;
+  return { (int)width, (int)height, handle };
 }

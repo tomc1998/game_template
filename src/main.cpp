@@ -1,23 +1,26 @@
-#pragma once
-
 #include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <lua.hpp>
 #include <png.h>
 
+#include <vector>
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <deque>
+#include <unordered_map>
+#include <utility>
 
 #include "input.hpp"
 #include "load_image.hpp"
 #include "script_test.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
+#include "color.hpp"
 #include "components.hpp"
 #include "shader.hpp"
 #include "renderer/renderer.hpp"

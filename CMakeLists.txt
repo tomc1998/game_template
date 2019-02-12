@@ -43,10 +43,10 @@ target_link_libraries(entt-game luajit png ${glfw-pkg-config})
 
 # Figure out per-platform compiler flags
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set (CMAKE_CXX_FLAGS "--std=c++14 -Wall -Werror -g -O3")
+  set (CMAKE_CXX_FLAGS "--std=c++14 -Wall -Werror -g -O3 -Wno-pragma-once-outside-header")
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  set (CMAKE_CXX_FLAGS "-std=c++14 -Wall -Werror -g -O3")
+  set (CMAKE_CXX_FLAGS "-std=c++14 -Wall -Werror -g -O3 -Wno-pragma-once-outside-header")
 endif()
 
